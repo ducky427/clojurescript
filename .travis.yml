@@ -11,10 +11,17 @@ before_script:
   - script/bootstrap
   - mkdir -p builds/out-adv
   - mkdir -p builds/out-self
+  - mkdir -p builds/out-self-parity/clojure/test
+  - jar xvf lib/clojure.jar clojure/template.clj > /dev/null
+  - jar xvf lib/test.check.jar clojure/test/check/random clojure/test/check/generators.cljc clojure/test/check/rose_tree
   - wget https://gist.githubusercontent.com/ducky427/6eda0f7fec13cbc2d26d6ba92485d826/raw/80f43a8b979794bb82253d3a0e7d7c59ce11d612/check.py
+  - mv clojure/template.clj builds/out-self-parity/clojure
+  - mv clojure/test/check builds/out-self-parity/clojure/test
   - bin/cljsc src/test/cljs "{:optimizations :advanced :output-wrapper true :verbose true :compiler-stats true :parallel-build true :output-dir \"builds/out-adv\"}" > builds/out-adv/core-advanced-test.js
   - bin/cljsc src/test/self/self_host  "{:optimizations :simple :static-fns true :output-dir \"builds/out-self\" :optimize-constants true :verbose true :compiler-stats true :parallel-build true :target :nodejs}" > builds/out-self/core-self-test.js
+  - bin/cljsc src/test/self/self_parity  "{:optimizations :none :output-to \"builds/out-self-parity/main.js\" :output
 
 script:
   - ./spidermoney/js -f builds/out-adv/core-advanced-test.js | tail -n 2 | grep -o '[[:digit:]]*' | python check.py
   - node builds/out-self/core-self-test.js | tail -n 2 | grep -o '[[:digit:]]*' | python check.py
+  - node builds/out-self-parity/main.js | tail -n 2 | grep -o '[[:digit:]]*' | python check.py
