@@ -19,7 +19,7 @@ before_script:
   - mv clojure/test/check builds/out-self-parity/clojure/test
   - bin/cljsc src/test/cljs "{:optimizations :advanced :output-wrapper true :verbose true :compiler-stats true :parallel-build true :output-dir \"builds/out-adv\"}" > builds/out-adv/core-advanced-test.js
   - bin/cljsc src/test/self/self_host  "{:optimizations :simple :static-fns true :output-dir \"builds/out-self\" :optimize-constants true :verbose true :compiler-stats true :parallel-build true :target :nodejs}" > builds/out-self/core-self-test.js
-  - bin/cljsc src/test/self/self_parity  "{:optimizations :none :output-to \"builds/out-self-parity/main.js\" :output
+  - bin/cljsc src/test/self/self_parity  "{:optimizations :none :output-to \"builds/out-self-parity/main.js\" :output-dir \"builds/out-self-parity\" :main self-parity.test :target :nodejs}"
 
 script:
   - ./spidermoney/js -f builds/out-adv/core-advanced-test.js | tail -n 2 | grep -o '[[:digit:]]*' | python check.py
