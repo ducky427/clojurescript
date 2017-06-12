@@ -1,0 +1,20 @@
+language: node_js
+
+node_js:
+  - "8"
+
+before_install:
+  - wget https://ftp.mozilla.org/pub/firefox/nightly/latest-mozilla-central/jsshell-linux-x86_64.zip
+  - unzip jsshell-linux-x86_64.zip -d spidermoney
+
+before_script:
+  - script/bootstrap
+  - mkdir -p builds/out-adv
+  - mkdir -p builds/out-self
+  - wget https://gist.githubusercontent.com/ducky427/6eda0f7fec13cbc2d26d6ba92485d826/raw/80f43a8b979794bb82253d3a0e7d7c59ce11d612/check.py
+  - bin/cljsc src/test/cljs "{:optimizations :advanced :output-wrapper true :verbose true :compiler-stats true :parallel-build true :output-dir \"builds/out-adv\"}" > builds/out-adv/core-advanced-test.js
+  - bin/cljsc src/test/self/self_host  "{:optimizations :simple :static-fns true :output-dir \"builds/out-self\" :optimize-constants true :verbose true :compiler-stats true :parallel-build true :target :nodejs}" > builds/out-self/core-self-test.js
+
+script:
+  - ./spidermoney/js -f builds/out-adv/core-advanced-test.js | tail -n 2 | grep -o '[[:digit:]]*' | python check.py
+  - node builds/out-self/core-self-test.js | tail -n 2 | grep -o '[[:digit:]]*' | python check.py
